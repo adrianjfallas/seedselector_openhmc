@@ -107,12 +107,12 @@ main () {
          mkdir $regression_path/seed_selector/
          cp -v ${OPENHMC_SIM}/tb/uvc/src/seed_selector/seed_selector.sv $regression_path/seed_selector/
          cp -v ${OPENHMC_SIM}/tb/uvc/src/seed_selector/cov_tree_defs_and_methods.sv $regression_path/seed_selector/
-         echo -e "\`include \"seed_selector/cov_tree_defs_and_methods.sv\"\n\nfunction void build_base_covmodel_tree();\n\n\t\$display(\"SEED_SELECTOR: First test run, no coverage tree yet.\");\n\nendfunction" > ${OPENHMC_SIM}/tb/uvc/src/seed_selector/tree_cov_model_base.sv
+         echo -e "\`include \"seed_selector/cov_tree_defs_and_methods.sv\"\n\nfunction int build_base_covmodel_tree(int influence_param_1);\n\n\t\$display(\"SEED_SELECTOR: First test run, no coverage tree yet.\");\n\nendfunction" > ${OPENHMC_SIM}/tb/uvc/src/seed_selector/tree_cov_model_base.sv
          cp -v ${OPENHMC_SIM}/tb/uvc/src/seed_selector/tree_cov_model_base.sv $regression_path/seed_selector/
          echo -e "\n"
       fi
 
-      #until [[ $(($total_functional_coverage_percent)) -ge $(($target_functional_coverage_percent)) ]] || [[ "$test_runs" -ge 50 ]]
+      #until [[ $(($total_functional_coverage_percent)) -ge $(($target_functional_coverage_percent)) ]] || [[ "$test_runs" -ge 4 ]]
       until [[ $(($total_functional_coverage_percent)) -ge $(($target_functional_coverage_percent)) ]]
       do
          test_idx=$(($RANDOM % $num_tests))
@@ -131,12 +131,15 @@ main () {
             ${OPENHMC_SIM}/tb/run/run_files/run.sh -t $current_test -o -c -e -s $random_seed $*
             if [ "$test_runs" -gt 0 ]
             then
+               ${OPENHMC_SIM}/tb/run/seed_selector_parsing.pl
                ## If seed selector discards
                if [ "$?" -eq 7 ]
                then
                    cd $regression_path
-                   echo "Removing $current_test_run since it was discarded by the seed selector..."
+                   echo -e "Removing $current_test_run since it was discarded by the seed selector...\n\n"
                    rm -rf $current_test_run_path
+                   echo -e "$current_test_run random_seed: $random_seed current_collected_functional_coverage_percent: $total_functional_coverage_percent% [DISCARDED BY SEED_SELECTOR]" >> seeds.log
+                   ((test_runs+=1))
                    continue
                fi
             fi
@@ -148,8 +151,9 @@ main () {
          cd $regression_path
          rm -rf automerge/ automerge.cmd autorunfile
          ${OPENHMC_SIM}/tb/run/merge_cov
-         imc -load ./automerge -execcmd "report -summary -metrics covergroup -cumulative on -local off" > merged_functional_coverage_summary.log
-         #imc -load ./automerge -execcmd "report -summary -metrics functional -cumulative on -local off" > merged_functional_coverage_summary.log
+         imc -load ./automerge -execcmd "report -detail -inst tb_top.axi4_hmc_req_if -metrics covergroup -both" > merged_functional_coverage_axi4_hmc_req_if.log
+         #imc -load ./automerge -execcmd "report -summary -metrics covergroup -cumulative on -local off" > merged_functional_coverage_summary.log
+         ##imc -load ./automerge -execcmd "report -summary -metrics functional -cumulative on -local off" > merged_functional_coverage_summary.log
          ${OPENHMC_SIM}/tb/run/cov_report_parsing.pl
          total_functional_coverage_percent=$?
          echo -e "$current_test_run random_seed: $random_seed current_collected_functional_coverage_percent: $total_functional_coverage_percent%" >> seeds.log
@@ -159,7 +163,7 @@ main () {
          then
             #Updating tree coverage model
             echo -e "Creating base tree coverage model"
-            imc -load ./automerge -execcmd "report -detail -inst tb_top.* -metrics covergroup -both -cumulative on -local off" > $regression_path/seed_selector/merged_functional_coverage_detailed.log
+            imc -load ./automerge -execcmd "report -detail -inst tb_top.* -metrics covergroup -both" > $regression_path/seed_selector/merged_functional_coverage_detailed.log
             cd $regression_path/seed_selector/
             ${OPENHMC_SIM}/tb/run/create_tree_cov_model.pl > $regression_path/seed_selector/tree_cov_model_base.sv
             cp -v $regression_path/seed_selector/tree_cov_model_base.sv $current_test_run_path
@@ -173,7 +177,7 @@ main () {
          #echo -e "Removing the repo's tree_cov_model_base.v file"
          #rm -rf ${OPENHMC_SIM}/tb/uvc/src/seed_selector/tree_cov_model_base.sv
          echo -e "Restoring the repo's tree_cov_model_base.v file"
-         echo -e "\`include \"seed_selector/cov_tree_defs_and_methods.sv\"\n\nfunction void build_base_covmodel_tree();\n\n\t\$display(\"SEED_SELECTOR: First test run, no coverage tree yet.\");\n\nendfunction" > ${OPENHMC_SIM}/tb/uvc/src/seed_selector/tree_cov_model_base.sv
+         echo -e "\`include \"seed_selector/cov_tree_defs_and_methods.sv\"\n\nfunction int build_base_covmodel_tree(int influence_param_1);\n\n\t\$display(\"SEED_SELECTOR: First test run, no coverage tree yet.\");\n\nendfunction" > ${OPENHMC_SIM}/tb/uvc/src/seed_selector/tree_cov_model_base.sv
       fi
       echo -e "\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
       echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
@@ -189,8 +193,6 @@ main () {
 #Set these variables first
 regressions_folder="/nis/asic/cr_dump2/fallasad/SeedSelector_OpenHMC/RegressionResults"
 project="OpenHMC"
-#target_functional_coverage_percent=10;
-#seed_selector=1;
 #-----------------------------------------------------------------
 #-----------------------------------------------------------------
 

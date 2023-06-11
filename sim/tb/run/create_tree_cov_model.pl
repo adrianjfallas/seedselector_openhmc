@@ -28,7 +28,11 @@ my @lines = <LOG>;
 close LOG;
 
 print "`include \"seed_selector/cov_tree_defs_and_methods.sv\"\n\n";
-print "function void build_base_covmodel_tree();\n\n";
+print "function int build_base_covmodel_tree(int influence_param_1);\n\n";
+print "\tstring s;\n";
+print "\tint base_tree_weight;\n";
+print "\tint seed_tree_weight;\n";
+print "\tint seed_selector_result;\n";
 print "\tTreeNode base_covermodel;\n";
 
 my $instance_name;
@@ -155,7 +159,8 @@ foreach my $line(@lines) {
          print "\tbase_covergroup_${cover_group_number}.node_id = $cover_item_number;\n";
          print "\tbase_covergroup_${cover_group_number}.name = \"$cover_item_name\";\n";
          print "\tbase_covergroup_${cover_group_number}.level = 1;\n";
-         print "\tbase_covergroup_${cover_group_number}.add_cov_data($cover_item_functional_cov_overall_covered, $cover_item_functional_cov_points_covered, $cover_item_functional_cov_points_total);\n";
+         print "\tbase_covergroup_${cover_group_number}.set_cov_data($cover_item_functional_cov_overall_covered, $cover_item_functional_cov_points_covered, $cover_item_functional_cov_points_total);\n";
+         print "\tbase_covergroup_${cover_group_number}.add_influence_param_data();\n";
          print "\tbase_covermodel.add_child(base_covergroup_${cover_group_number});\n\n";
          $cover_group_number++;
       };
@@ -174,7 +179,8 @@ foreach my $line(@lines) {
          print "\tbase_coverpoint_${cover_point_number}.node_id = $cover_item_number;\n";
          print "\tbase_coverpoint_${cover_point_number}.name = \"$cover_item_name\";\n";
          print "\tbase_coverpoint_${cover_point_number}.level = 2;\n";
-         print "\tbase_coverpoint_${cover_point_number}.add_cov_data($cover_item_functional_cov_overall_covered, $cover_item_functional_cov_points_covered, $cover_item_functional_cov_points_total);\n";
+         print "\tbase_coverpoint_${cover_point_number}.set_cov_data($cover_item_functional_cov_overall_covered, $cover_item_functional_cov_points_covered, $cover_item_functional_cov_points_total);\n";
+         print "\tbase_coverpoint_${cover_point_number}.add_influence_param_data();\n";
          $cover_group_number--;
          print "\tbase_covergroup_${cover_group_number}.add_child(base_coverpoint_${cover_point_number});\n\n";
          $cover_group_number++;
@@ -194,7 +200,8 @@ foreach my $line(@lines) {
          print "\tbase_covervalue_${cover_value_number}.node_id = $cover_item_number;\n";
          print "\tbase_covervalue_${cover_value_number}.name = \"$cover_item_name\";\n";
          print "\tbase_covervalue_${cover_value_number}.level = 3;\n";
-         print "\tbase_covervalue_${cover_value_number}.add_cov_data($cover_item_functional_cov_overall_covered, $cover_item_functional_cov_points_covered, $cover_item_functional_cov_points_total);\n";
+         print "\tbase_covervalue_${cover_value_number}.set_cov_data($cover_item_functional_cov_overall_covered, $cover_item_functional_cov_points_covered, $cover_item_functional_cov_points_total);\n";
+         print "\tbase_covervalue_${cover_value_number}.add_influence_param_data();\n";
          $cover_point_number--;
          print "\tbase_coverpoint_${cover_point_number}.add_child(base_covervalue_${cover_value_number});\n\n";
          $cover_point_number++;
@@ -208,6 +215,23 @@ foreach my $line(@lines) {
 };
 
 print"\tbase_covermodel.print_tree(1);\n\n";
+
+print"\tbase_tree_weight = base_covermodel.get_tree_weight();\n";
+print"\ts.itoa(base_tree_weight);\n";
+print"\t\$display({\"SEED_SELECTOR: base tree weight : \", s});\n\n";
+print"\tbase_covermodel.update_seed_tree_weight(influence_param_1);\n\n";
+print"\tseed_tree_weight = base_covermodel.get_tree_weight();\n";
+print"\ts.itoa(seed_tree_weight);\n";
+print"\t\$display({\"SEED_SELECTOR: seed tree weight : \", s});\n\n";
+print"\t\if (base_tree_weight > seed_tree_weight) begin\n";
+print"\t\tseed_selector_result = 0;\n";
+print"\t\t\$display(\"SEED_SELECTOR: APPROVED\");\n";
+print"\tend\n";
+print"\telse begin\n";
+print"\t\tseed_selector_result = 7;\n";
+print"\t\t\$display(\"SEED_SELECTOR: DISCARDED\");\n";
+print"\tend\n";
+print"\treturn seed_selector_result;\n";
 print"endfunction";
 exit 1;
 
@@ -217,13 +241,13 @@ exit 1;
 #function void build_base_covmodel_tree();
 #
 #   TreeNode base_covermodel;
-#	TreeNode base_covergroup_0;
-#	TreeNode base_coverpoint_0;
-#	TreeNode base_covervalue_0;
-#	TreeNode base_covervalue_1;
-#	TreeNode base_coverpoint_1;
-#	TreeNode base_covervalue_2;
-#	TreeNode base_covervalue_3;
+#	 TreeNode base_covergroup_0;
+#	 TreeNode base_coverpoint_0;
+#	 TreeNode base_covervalue_0;
+#	 TreeNode base_covervalue_1;
+#	 TreeNode base_coverpoint_1;
+#	 TreeNode base_covervalue_2;
+#	 TreeNode base_covervalue_3;
 #
 #   base_covermodel = new();
 #   base_covermodel.node_id = 1;
@@ -233,5 +257,6 @@ exit 1;
 #   base_covergroup_0.node_id = 2;
 #   base_covergroup_0.name = "axi4";
 #   base_covergroup_0.level = 1;
-#	 base_covergroup_0.add_cov_data(38.88, 229, 589);
+#	 base_covergroup_0.set_cov_data(38.88, 229, 589);
 #	 base_covermodel.add_child(base_covergroup_0);
+#	 base_covermodel.add_influence_param_data();

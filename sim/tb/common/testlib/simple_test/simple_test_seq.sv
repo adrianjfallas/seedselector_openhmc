@@ -78,11 +78,19 @@ class simple_test_seq extends hmc_base_seq;
         `uvm_do(init)
         #1us;	
 
-		repeat (iterations) 
+      for (int i = 0; i < iterations; i++) begin
+         int seed_selector_done_val;
+         if (i == 0) begin
+            seed_selector_done_val = 0;
+         end
+         else begin
+            seed_selector_done_val = 1;
+         end
 			randcase
-				1 : `uvm_do_with(work, {req_class == NON_POSTED;})
-				1 : `uvm_do_with(work, {req_class == POSTED;})
-		endcase
+				1 : `uvm_do_with(work, {seed_selector_done == seed_selector_done_val; req_class == NON_POSTED;})
+				1 : `uvm_do_with(work, {seed_selector_done == seed_selector_done_val; req_class == POSTED;})
+		   endcase
+      end
 
 		`uvm_info(get_type_name(), "simple_test_seq done", UVM_NONE)
 		`uvm_do(check)

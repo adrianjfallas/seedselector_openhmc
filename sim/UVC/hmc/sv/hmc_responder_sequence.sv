@@ -74,8 +74,8 @@ class hmc_responder_sequence extends uvm_sequence;
 		void'(this.randomize(delay));
 
 		new_timestamp = delay * 500ps + $time;
-      `uvm_info(get_type_name(),$psprintf("RSP_CRP_DELAY= %0d" , delay),UVM_LOW)
-      `uvm_info(get_type_name(),$psprintf("RSP_CRP_NEW_TS= %0d" , new_timestamp),UVM_LOW)
+      //`uvm_info(get_type_name(),$psprintf("RSP_CRP_DELAY= %0d" , delay),UVM_LOW)
+      //`uvm_info(get_type_name(),$psprintf("RSP_CRP_NEW_TS= %0d" , new_timestamp),UVM_LOW)
 
 		if (request.get_command_type() == HMC_READ_TYPE ||
 			request.get_command_type() == HMC_MODE_READ_TYPE

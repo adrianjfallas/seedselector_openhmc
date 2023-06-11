@@ -173,7 +173,7 @@ module tb_top ();
 	always #4ns clk_hmc_refclk <= ~clk_hmc_refclk;
 
 	always @(posedge clk_user) begin
-      $display("AXI4_REQ_TRANSACTION_PAUSE_COV : %f", axi4_hmc_req_if.axi4.TRANSACTION_PAUSE.get_inst_coverage());
+      //$display("AXI4_REQ_TRANSACTION_PAUSE_COV : %f", axi4_hmc_req_if.axi4.TRANSACTION_PAUSE.get_inst_coverage());
       //$display("AXI4_RSP_TRANSACTION_PAUSE_COV : %f", axi4_hmc_rsp_if.axi4.TRANSACTION_PAUSE.get_inst_coverage());
 	end
 

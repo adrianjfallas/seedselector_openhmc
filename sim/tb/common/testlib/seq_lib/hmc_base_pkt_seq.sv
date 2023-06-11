@@ -53,7 +53,10 @@ typedef enum {
 
 class hmc_base_pkt_seq extends hmc_base_seq;
 	
-	rand int num_packets ;
+   int seed_selector_result;
+   rand int seed_selector_done;
+
+   rand int num_packets ;
 	rand int pkts_per_req;
 	
 	
@@ -110,22 +113,9 @@ class hmc_base_pkt_seq extends hmc_base_seq;
       `uvm_info(get_type_name(),$psprintf("MIN_PACKET_LENGTH= %0d" , min_packet_length),UVM_LOW)
       `uvm_info(get_type_name(),$psprintf("MAX_PACKET_LENGTH= %0d" , max_packet_length),UVM_LOW)
 
-      if(`SEED_SELECTOR == 1)
+      if((`SEED_SELECTOR == 1) && (seed_selector_done == 0))
 		begin
 			`uvm_info(get_type_name(),$psprintf("SEED_SELECTOR: ANALYZING SEED"), UVM_LOW)
-			`uvm_info(get_type_name(),$psprintf("SEED_SELECTOR: APPROVED"), UVM_LOW)
-			//`uvm_fatal(get_type_name(), "SEED_SELECTOR: DISCARDED")
-            //#######//$system("python seed_selector.py min_flit_delay");
-            //#######//TODO
-            //#######//Include the tree file, loaded in the run, at first it could be an empty file
-            //#######//TODO
-            //#######//Grab and copy created tree
-            //#######//TODO
-            //#######//modifiy it with the would have tree of the gotten values
-            //#######//TODO
-            //#######//compare original and seed tree to get the metric
-            //#######//TODO
-            //#######//if not convenient kill the test, exit code 777 to notify up to delete its results
          `include "seed_selector/seed_selector.sv"
       end
 
