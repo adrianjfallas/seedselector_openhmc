@@ -114,7 +114,7 @@ interface hmc_sr_if #(parameter NUM_LANES = 16) ();
 	covergroup sleep_times_cg @ (posedge RXPS);
 		option.per_instance = 1;
 		SLEEP_TIME	: coverpoint $time - RXPS_fall {
-			bins short_sleep[20] = {[2*t_SREF:20*t_SREF]};
+			bins short_sleep[20] = {[t_SREF:20*t_SREF]};
 			bins long_sleep = {[21*t_SREF:$]};
 			illegal_bins illegal = {[0:t_SREF-1]};
 		}

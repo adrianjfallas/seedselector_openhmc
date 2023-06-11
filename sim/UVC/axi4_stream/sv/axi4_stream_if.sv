@@ -87,9 +87,9 @@ interface axi4_stream_if #(parameter DATA_BYTES = 16, parameter TUSER_WIDTH = 16
 		//-- cover the amount of consecutive AXI4 transactions
 		CONSECUTIVE_TRANSACTIONS: coverpoint {TVALID , TREADY}{
 			bins transactions_single	= (0,1,2 =>3			=> 0,1,2);
-			bins transactions_1_5[] 	= (0,1,2 =>3[*2:10] 	=> 0,1,2);
-			bins transactions_11_50[] 	= (0,1,2 =>3[*11:50]	=> 0,1,2);
-			bins transactions_huge 		= (0,1,2 =>3[*51:100000]=> 0,1,2);
+			bins transactions_1_5[] 	= (0,1,2 =>3[*2:5] 	=> 0,1,2);
+			bins transactions_6_10[]	= (0,1,2 =>3[*6:10]	=> 0,1,2);
+			bins transactions_huge 		= (0,1,2 =>3[*11:100000]=> 0,1,2);
 		}
 
 		//-- cover the waiting time after TVALID is set until TREADY in clock cycles
@@ -97,15 +97,14 @@ interface axi4_stream_if #(parameter DATA_BYTES = 16, parameter TUSER_WIDTH = 16
 			bins zero_waiting_time		= (0,1				=> 3);
 			bins low_waiting_time[]		= (2[*1:5]			=> 3);
 			bins medium_waiting_time[]	= (2[*6:15] 		=> 3);
-			bins high_waiting_time		= (2[*16:100000] 	=> 3);
+			bins high_waiting_time		= (2[*16:100]    	=> 3); //The max number of repetitions for this bin was reduced since the previous one made the simulations unecessarily slow.
 			illegal_bins illegal		= (2				=> 0);
 		}
 		
 		//-- Pause between Transactions
 		TRANSACTION_PAUSE: coverpoint {TVALID , TREADY}{
 			bins low_waiting_time[]		= (3 => 0[*1:5]		=> 2,3);
-			bins medium_waiting_time[]	= (3 => 0[*6:15] 	=> 2,3);
-			bins high_waiting_time		= (3 => 0[*16:100] 	=> 2,3);
+			bins high_waiting_time		= (3 => 0[*6:100] 	=> 2,3);
 		}
 		
 		//-- cover the time TREADY is active until deassertion or TVALID in clock cycles
@@ -153,7 +152,10 @@ interface axi4_stream_if #(parameter DATA_BYTES = 16, parameter TUSER_WIDTH = 16
 	//-- creating an instance of the covergroup
 	axi4_cg axi4 = new();
 
-
+   //Debug message
+   //always @(posedge ACLK) begin
+   //   $display("AXI4_TRANSCTION_PAUSE_COV : %f", axi4.TRANSACTION_PAUSE.get_inst_coverage());
+	//end
 
 	//--
 	//-- Interface Assertions

@@ -47,10 +47,12 @@ typedef enum {
 	//	MISC
 } request_class_e;
 
+`ifdef SEED_SELECTOR
+   `include "seed_selector/tree_cov_model_base.sv"
+`endif
+
 class hmc_base_pkt_seq extends hmc_base_seq;
 	
-	
-
 	rand int num_packets ;
 	rand int pkts_per_req;
 	
@@ -64,12 +66,11 @@ class hmc_base_pkt_seq extends hmc_base_seq;
 	rand int min_packet_length ;
 	rand int max_packet_length ;
 	
-	
-
 	constraint delay_c {
 		!(min_flit_delay 	> max_flit_delay);
-		min_flit_delay 		>= 0;		
-		soft max_flit_delay	<= 50;
+		min_flit_delay  == max_flit_delay;
+		min_flit_delay 		>= 0;
+		soft max_flit_delay	<= 25;
 	}
 	
 	constraint pkt_length_c {
@@ -100,6 +101,33 @@ class hmc_base_pkt_seq extends hmc_base_seq;
 
 	virtual task body();
 		`uvm_info(get_type_name(), "starting...", UVM_HIGH)
+
+      `uvm_info(get_type_name(),$psprintf("NUM_PACKETS= %0d" , num_packets),UVM_LOW)
+      `uvm_info(get_type_name(),$psprintf("PKTS_PER_REQ= %0d" , pkts_per_req),UVM_LOW)
+      `uvm_info(get_type_name(),$psprintf("REQ_CLASS= %s" , req_class.name()),UVM_LOW)
+      `uvm_info(get_type_name(),$psprintf("MIN_FLIT_DELAY= %0d" , min_flit_delay),UVM_LOW)
+      `uvm_info(get_type_name(),$psprintf("MAX_FLIT_DELAY= %0d" , max_flit_delay),UVM_LOW)
+      `uvm_info(get_type_name(),$psprintf("MIN_PACKET_LENGTH= %0d" , min_packet_length),UVM_LOW)
+      `uvm_info(get_type_name(),$psprintf("MAX_PACKET_LENGTH= %0d" , max_packet_length),UVM_LOW)
+
+      if(`SEED_SELECTOR == 1)
+		begin
+			`uvm_info(get_type_name(),$psprintf("SEED_SELECTOR: ANALYZING SEED"), UVM_LOW)
+			`uvm_info(get_type_name(),$psprintf("SEED_SELECTOR: APPROVED"), UVM_LOW)
+			//`uvm_fatal(get_type_name(), "SEED_SELECTOR: DISCARDED")
+            //#######//$system("python seed_selector.py min_flit_delay");
+            //#######//TODO
+            //#######//Include the tree file, loaded in the run, at first it could be an empty file
+            //#######//TODO
+            //#######//Grab and copy created tree
+            //#######//TODO
+            //#######//modifiy it with the would have tree of the gotten values
+            //#######//TODO
+            //#######//compare original and seed tree to get the metric
+            //#######//TODO
+            //#######//if not convenient kill the test, exit code 777 to notify up to delete its results
+         `include "seed_selector/seed_selector.sv"
+      end
 
 		while (num_packets > 0) begin
 			`uvm_create_on(requests, p_sequencer.axi4_req_seqr)

@@ -39,10 +39,12 @@
 #!/bin/bash
 rm -rf waves.shm
 rm -rf INCA_libs
-rm -rf cov_work
-rm -f *.log
+#rm -rf cov_work
+#rm -f *.log
 rm -f irun.key
 rm -rf .simvision
 rm -rf .rmi_process
 rm -f *.diag
 rm -f *.err
+rm -rf xcelium.d/
+rm -f xrun.key

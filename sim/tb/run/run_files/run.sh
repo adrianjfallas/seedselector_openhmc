@@ -67,10 +67,11 @@ use_gui=
 input_file="-input ${CAG_TB_DIR}/build/ncsim.tcl"
 seed=""
 enable_coverage=""
+seed_selector=0
 
 
 #-- parse options
-while getopts 'acgort:v:d:s:l:f:q?' OPTION
+while getopts 'acegort:v:d:s:l:f:q?' OPTION
 do
 	case $OPTION in
 		a)  async_fifos="1"
@@ -80,13 +81,15 @@ do
 		d)	export CAG_DUT=${OPTARG}
 			dflag="1"
 			;;
+		e)	seed_selector=1
+			;;
 		f)  fpw="${OPTARG}"
 			;;
 		g)	use_gui="+gui"
 			;;
 		l)	num_lanes="${OPTARG}"
 			;;
-		o)	enable_coverage="-coverage all -covoverwrite"
+		o)	enable_coverage="-coverage all -covoverwrite -write_metrics"
 			;;
 		q)	input_file=""
 			verbosity="UVM_NONE"
@@ -190,13 +193,6 @@ CAG_TB_COMPILE_IUS="${CAG_TB_DIR}/build/compile_ius_${CAG_DUT}.f"
 printf "****************************************************\n"
 printf "****************************************************\n"
 
-#-- do some clean up
-if [ "$do_clean_up" ]
-then
-	echo "Removing old build files..."
-	${CAG_TB_DIR}/../run/clean_up.sh
-fi
-
 #-- all other stuff
 echo "Starting the verification environment..."
 irun ${input_file} \
@@ -207,4 +203,11 @@ irun ${input_file} \
 	"-define OPENHMC_ASYNC_FIFOS=$async_fifos" \
 	-timescale 1ns/1ps \
 	${use_gui} "+UVM_TESTNAME=${test_name}" "+UVM_VERBOSITY=${verbosity}" ${seed} \
-	"-define LOG_NUM_LANES=$log_num_lanes -define FPW=$fpw -define LOG_FPW=$log_fpw -define AXI4BYTES=$num_axi_bytes" $*
+	"-define SEED_SELECTOR=$seed_selector -define LOG_NUM_LANES=$log_num_lanes -define FPW=$fpw -define LOG_FPW=$log_fpw -define AXI4BYTES=$num_axi_bytes" $*
+
+#-- do some clean up
+if [ "$do_clean_up" == "1" ]
+then
+	echo "Removing old build files..."
+	${CAG_TB_DIR}/../run/clean_up.sh
+fi

@@ -148,7 +148,8 @@ class sleep_mode_test_seq extends hmc_base_seq;
 			end
 			//Stay in Sleep for up to 22 us
 			sleep_time_rand_succeeds : assert (std::randomize(sleep_time) 
-									with {sleep_time >= 2us && sleep_time < 22us;}); //-- should be 1ms in real system
+									with {sleep_time >= 750ns && sleep_time < 22us;}); //-- should be 1ms in real system
+			`uvm_info(get_type_name(),$psprintf("SLEEP_TIME= %0d" , sleep_time),UVM_LOW)
 			#(sleep_time);
 			`uvm_info(get_type_name(),$psprintf("SLEEP MODE: EXIT"),UVM_LOW)
 			//Force openHMC controller to exit sleep mode
