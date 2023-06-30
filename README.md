@@ -1,5 +1,8 @@
-openhmc
-=======
+seed selector openhmc
+=====================
+
+Coverage collection speed up method integrated to the awesome openHMC project.
+
 
 openHMC - an open source Hybrid Memory Cube Controller
 
